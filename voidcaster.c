@@ -101,24 +101,6 @@ static void usage(void)
 }
 
 /**
- * Called upon every node visited in a referenced function declaration.
- *
- * @param cur the cursor pointing to the node
- * @param parent the cursor pointing to the parent
- * @param dta data passed to clang_visitCursorChildren()
- */
-static enum CXChildVisitResult visitDeclaration(CXCursor cur, CXCursor parent, CXClientData dta)
-{
-	int *needsVoidCastPtr = (int *)dta;
-
-	enum CXCursorKind curKind = clang_getCursorKind(cur);
-	printf("Cursor kind: %d\n", curKind);
-
-	/* continue recursively */
-	return CXChildVisit_Recurse;
-}
-
-/**
  * Called upon every node visited in a translation unit.
  *
  * @param cur the cursor pointing to the node
