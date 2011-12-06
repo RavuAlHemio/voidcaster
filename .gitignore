@@ -4,5 +4,8 @@
 # Vim spam
 *.swp
 
+# build config
+config.mk
+
 # binaries
 voidcaster
