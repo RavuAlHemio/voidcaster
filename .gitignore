@@ -1,0 +1,8 @@
+# build spam
+*.o
+
+# Vim spam
+*.swp
+
+# binaries
+voidcaster
