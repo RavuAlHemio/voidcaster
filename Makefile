@@ -27,4 +27,8 @@ clean:
 	rm -f voidcaster
 	rm -f voidcaster.o
 
+# force rebuild if config changes
+Makefile: config.mk
+%.c: Makefile
+
 .PHONY: all clean
