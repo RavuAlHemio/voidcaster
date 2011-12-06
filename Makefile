@@ -28,7 +28,9 @@ clean:
 	rm -f voidcaster.o
 
 # force rebuild if config changes
+ifneq ($(wildcard config.mk),)
 Makefile: config.mk
+endif
 %.c: Makefile
 
 .PHONY: all clean
