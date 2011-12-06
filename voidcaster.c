@@ -295,6 +295,17 @@ static enum exitcodes_e process_file(
 }
 
 /**
+ * Prints out a warning that it is pointless to specify the given option
+ * multiple times.
+ *
+ * @param option the option to warn about, including the hyphen
+ */
+static inline void pointless(const char *option)
+{
+	(void)fprintf(stderr, "Warning: it is pointless to specify %s multiple times.\n", option);
+}
+
+/**
  * The main entry point of the application.
  * @param argc the number of command-line arguments
  * @param argv the array of command-line arguments
@@ -340,12 +351,12 @@ int main(int argc, char **argv)
 				break;
 			case 'i':
 				if (interactive)
-					fprintf(stderr, "Warning: it is pointless to specify -i multiple times.\n");
+					pointless("-i");
 				interactive = true;
 				break;
 			case 's':
 				if (extstatus)
-					fprintf(stderr, "Warning: it is pointless to specify -s multiple times.\n");
+					pointless("-s");
 				extstatus = true;
 				break;
 			case '?':
