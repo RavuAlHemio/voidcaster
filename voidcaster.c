@@ -18,6 +18,13 @@
 
 #include "msa.h"
 
+/* make getopt accept -g option iff a system include path was specified */
+#ifdef GCC_SYSINCLUDE
+#define GETOPT_G "g"
+#else
+#define GETOPT_G ""
+#endif
+
 /** The possible exit codes of this program. */
 enum exitcodes_e
 {
@@ -80,6 +87,10 @@ static void usage(void)
 		"Proposes locations for casts to void in a C program.\n"
 		"\n"
 		"  -D<macro>[=<value>]    macro to define\n"
+#ifdef GCC_SYSINCLUDE
+		"  -g                     don't add the include path of the installed GCC\n"
+		"                         automatically\n"
+#endif
 		"  -i                     interactive mode\n"
 		"  -I<path>               add a path where the preprocessor shall search\n"
 		"                         for includes\n"
@@ -298,6 +309,9 @@ int main(int argc, char **argv)
 	bool interactive = false;
 	bool extstatus = false;
 	enum exitcodes_e ret = EXITCODE_OK;
+#ifdef GCC_SYSINCLUDE
+	bool inclgcc = true;
+#endif
 
 	msa_t clangargs;
 
@@ -313,7 +327,7 @@ int main(int argc, char **argv)
 		return EXITCODE_MM;
 	}
 
-	while ((opt = getopt(argc, argv, "D:I:is")) != -1)
+	while ((opt = getopt(argc, argv, "D:I:is" GETOPT_G)) != -1)
 	{
 		switch (opt)
 		{
@@ -331,6 +345,13 @@ int main(int argc, char **argv)
 					return EXITCODE_MM;
 				}
 				break;
+#ifdef GCC_SYSINCLUDE
+			case 'g':
+				if (!inclgcc)
+					pointless("-g");
+				inclgcc = false;
+				break;
+#endif
 			case 'i':
 				if (interactive)
 					pointless("-i");
@@ -355,6 +376,18 @@ int main(int argc, char **argv)
 		msa_destroy(&clangargs);
 		usage();
 	}
+
+#ifdef GCC_SYSINCLUDE
+	/* add GCC include path */
+	if (inclgcc)
+	{
+		if (msa_add_prefixed(&clangargs, "-I", GCC_SYSINCLUDE) == 0)
+		{
+			perror("msa_add");
+			return EXITCODE_MM;
+		}
+	}
+#endif
 
 	/* fetch clang index */
 	CXIndex idx = clang_createIndex(0, 0);
