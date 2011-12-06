@@ -5,13 +5,23 @@ LIBS= \
 	-llibclang
 LDFLAGS=
 
+ifeq ($(VERBOSE),1)
+Q=
+else
+Q=@
+endif
+
+-include config.mk
+
 all: voidcaster
 
 voidcaster: voidcaster.o msa.o
-	$(CXX) $(LDFLAGS) $(CLDFLAGS) -o $@ $(LIBS) $^ $(LIBS)
+	@echo LINK $@
+	$(Q)$(CXX) $(LDFLAGS) $(CLDFLAGS) -o $@ $(LIBS) $^ $(LIBS)
 
 %.o: %.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(CLDFLAGS) -c -o $@ $^
+	@echo CC $@
+	$(Q)$(CC) $(CPPFLAGS) $(CFLAGS) $(CLDFLAGS) -c -o $@ $^
 
 clean:
 	rm -f voidcaster
