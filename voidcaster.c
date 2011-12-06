@@ -159,7 +159,7 @@ static enum CXChildVisitResult visitation(CXCursor cur, CXCursor parent, CXClien
 
 			clang_disposeString(funcName);
 			clang_disposeString(locFileName);
-			return CXChildVisit_Recurse;
+			return CXChildVisit_Continue;
 		}
 
 		switch (clang_getCursorResultType(target).kind)
