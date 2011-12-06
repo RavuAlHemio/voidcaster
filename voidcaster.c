@@ -112,6 +112,21 @@ static void usage(void)
 }
 
 /**
+ * Stores the location information from the cursor into the parameters
+ * passed by reference.
+ *
+ * @param cur cursor whose location to obtain
+ * @param locFileName by-ref to string specifying the filename
+ * @param locLn by-ref to integer specifying the line
+ * @param locCol by-ref to integer specifying the column
+ */
+static inline void cursorLocation(CXCursor cur, CXString *locFileName, unsigned int *locLn, unsigned int *locCol)
+{
+	CXSourceLocation loc = clang_getCursorLocation(cur);
+	clang_getPresumedLocation(loc, locFileName, locLn, locCol);
+}
+
+/**
  * Called upon every node visited in a translation unit.
  *
  * @param cur the cursor pointing to the node
@@ -150,14 +165,13 @@ static enum CXChildVisitResult visitation(CXCursor cur, CXCursor parent, CXClien
 		CXString funcName = clang_getCursorSpelling(cur);
 		/* the function declaration */
 		CXCursor target = clang_getCursorReferenced(cur);
-		/* the location */
-		CXSourceLocation loc = clang_getCursorLocation(cur);
+		/* the location info */
 		unsigned int locLn, locCol;
 		CXString locFileName;
 		/* the type of the function and its return type */
 		CXType retType;
 
-		clang_getPresumedLocation(loc, &locFileName, &locLn, &locCol);
+		cursorLocation(cur, &locFileName, &locLn, &locCol);
 
 		if (clang_Cursor_isNull(target) || clang_getCursorType(target).kind == CXType_FunctionNoProto)
 		{
@@ -204,6 +218,36 @@ static enum CXChildVisitResult visitation(CXCursor cur, CXCursor parent, CXClien
 		clang_disposeString(funcName);
 		clang_disposeString(locFileName);
 	}
+	else if (curKind == CXCursor_BinaryOperator)
+	{
+		/* FIXME: check for void casts in the comma operator? */
+	}
+#ifdef DEBUG
+	else
+	{
+		/* the location info */
+		unsigned int locLn, locCol;
+		CXString locFileName;
+
+		CXString cursDesc = clang_getCursorDisplayName(cur);
+		CXString cursKind = clang_getCursorKindSpelling(clang_getCursorKind(cur));
+
+		cursorLocation(cur, &locFileName, &locLn, &locCol);
+
+		printf(
+			"At level %zu, visiting node of kind %s named %s at %s:%u:%u.\n",
+			dstate->level,
+			clang_getCString(cursKind),
+			clang_getCString(cursDesc),
+			clang_getCString(locFileName),
+			locLn, locCol
+		);
+
+		clang_disposeString(locFileName);
+		clang_disposeString(cursKind);
+		clang_disposeString(cursDesc);
+	}
+#endif
 
 	/* continue recursively */
 	clang_visitChildren(
