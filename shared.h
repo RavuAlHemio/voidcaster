@@ -5,9 +5,20 @@
  *
  * @brief Data structures shared by multiple modules.
  */
+#include <stdlib.h>
 
 /** The name of the running binary, taken from argv[0]. */
 extern const char *progname;
+
+/** A location in a code module. */
+typedef struct module_loc_s
+{
+	/** The line in the module. */
+	size_t line;
+
+	/** The column in the line. */
+	size_t col;
+} module_loc_t;
 
 /** The possible exit codes of this program. */
 enum exitcodes_e

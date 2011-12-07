@@ -73,14 +73,13 @@ static void usage(void)
  *
  * @param file the name of the file where the cast is missing
  * @param func the name of the function called
- * @param line the line on which the cast should be inserted
- * @param col the column in which the cast should be inserted
+ * @param loc the location where the cast should be inserted
  */
-static void warnMissingVoid(const char *file, const char *func, size_t line, size_t col)
+static void warnMissingVoid(const char *file, const char *func, module_loc_t loc)
 {
 	fprintf(stderr,
 		"%s:%zu:%zu: Missing cast to void when calling function %s.\n",
-		file, line, col, func
+		file, loc.line, loc.col, func
 	);
 	suggested = true;
 }
@@ -90,16 +89,14 @@ static void warnMissingVoid(const char *file, const char *func, size_t line, siz
  *
  * @param file the name of the file containing the cast
  * @param func the name of the function called
- * @param startLine the line on which the cast starts
- * @param startCol the column in which the cast starts
- * @param stopLine the line on which the cast ends
- * @param stopCol the column in which the cast ends
+ * @param start the location where the cast starts
+ * @param end the location where the cast ends
  */
-static void warnSuperfluousVoid(const char *file, const char *func, size_t startLine, size_t startCol, size_t stopLine, size_t stopCol)
+static void warnSuperfluousVoid(const char *file, const char *func, module_loc_t start, module_loc_t end)
 {
 	fprintf(stderr,
 		"%s:%zu:%zu: Pointless cast to void when calling function %s.\n",
-		file, startLine, startCol, func
+		file, start.line, start.col, func
 	);
 	suggested = true;
 }

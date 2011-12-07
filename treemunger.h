@@ -15,22 +15,19 @@
  *
  * @param file the name of the file where the cast is missing
  * @param func the name of the function called
- * @param line the line on which the cast should be inserted
- * @param col the column in which the cast should be inserted
+ * @param loc the location at which the cast should be inserted
  */
-typedef void (*missingVoidProc)(const char *file, const char *func, size_t line, size_t col);
+typedef void (*missingVoidProc)(const char *file, const char *func, module_loc_t loc);
 
 /**
  * Type of callback which acts upon a superfluous cast to void.
  *
  * @param file the name of the file containing the cast
  * @param func the name of the function called
- * @param startLine the line on which the cast starts
- * @param startCol the column in which the cast starts
- * @param stopLine the line on which the cast ends
- * @param stopCol the column in which the cast ends
+ * @param start the location where the cast starts
+ * @param end the location where the cast ends
  */
-typedef void (*superfluousVoidProc)(const char *file, const char *func, size_t startLine, size_t startCol, size_t stopLine, size_t stopCol);
+typedef void (*superfluousVoidProc)(const char *file, const char *func, module_loc_t start, module_loc_t end);
 
 /**
  * Processes one file of source code.

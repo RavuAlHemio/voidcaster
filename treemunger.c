@@ -38,17 +38,11 @@ typedef struct
 		/** The file. */
 		const char *file;
 
-		/** The line where the cast begins. */
-		size_t startLn;
+		/** The location where the cast begins. */
+		module_loc_t startLoc;
 
-		/** The column where the cast begins. */
-		size_t startCol;
-
-		/** The line where the cast ends. */
-		size_t endLn;
-
-		/** The column where the cast ends. */
-		size_t endCol;
+		/** The location where the cast ends. */
+		module_loc_t endLoc;
 	} castLoc;
 } descent_state;
 
@@ -58,25 +52,26 @@ typedef struct
  *
  * @param cur cursor whose location to obtain
  * @param locFileName by-ref to string specifying the filename
- * @param locLn by-ref to integer specifying the line
- * @param locCol by-ref to integer specifying the column
+ * @param loc by-ref to location
  */
-static inline void cursorLocation(CXCursor cur, CXString *locFileName, unsigned int *locLn, unsigned int *locCol)
+static inline void cursorLocation(CXCursor cur, CXString *locFileName, module_loc_t *loc)
 {
-	CXSourceLocation loc = clang_getCursorLocation(cur);
-	clang_getPresumedLocation(loc, locFileName, locLn, locCol);
+	unsigned int l, c;
+
+	CXSourceLocation cloc = clang_getCursorLocation(cur);
+	clang_getPresumedLocation(cloc, locFileName, &l, &c);
+	loc->line = l;
+	loc->col = c;
 }
 
 /**
  * Returns the extent of the cast referenced by the given cursor.
  *
  * @param cur cursor to C-style cast whose extent to obtain
- * @param startLine the line where the cast begins
- * @param startCol the column where the cast begins
- * @param stopLine the line where the cast ends
- * @param stopCol the column where the cast ends
+ * @param start by-ref to the location where the cast begins
+ * @param end by-ref to the location where the cast ends
  */
-static inline void castExtent(CXCursor cur, size_t *startLine, size_t *startCol, size_t *stopLine, size_t *stopCol)
+static inline void castExtent(CXCursor cur, module_loc_t *start, module_loc_t *end)
 {
 	CXToken *toks;
 	CXCursor *curs;
@@ -124,13 +119,13 @@ static inline void castExtent(CXCursor cur, size_t *startLine, size_t *startCol,
 		{
 			unsigned int newSL, newSC;
 			clang_getPresumedLocation(clang_getRangeStart(tokExt), NULL, &newSL, &newSC);
-			*startLine = newSL;
-			*startCol = newSC;
+			start->line = newSL;
+			start->col = newSC;
 			startSet = true;
 		}
 
-		*stopLine = newEL;
-		*stopCol = newEC;
+		end->line = newEL;
+		end->col = newEC;
 	}
 
 	/* free cursors, free tokens */
@@ -178,10 +173,8 @@ static enum CXChildVisitResult visitation(CXCursor cur, CXCursor parent, CXClien
 			/* fetch location info */
 			castExtent(
 				cur,
-				&kiddstate.castLoc.startLn,
-				&kiddstate.castLoc.startCol,
-				&kiddstate.castLoc.endLn,
-				&kiddstate.castLoc.endCol
+				&kiddstate.castLoc.startLoc,
+				&kiddstate.castLoc.endLoc
 			);
 
 			/* store it for the kid */
@@ -196,18 +189,18 @@ static enum CXChildVisitResult visitation(CXCursor cur, CXCursor parent, CXClien
 		/* the function declaration */
 		CXCursor target = clang_getCursorReferenced(cur);
 		/* the location info */
-		unsigned int locLn, locCol;
+		module_loc_t loc;
 
 		disposeFileName = true;
 
-		cursorLocation(cur, &locFileName, &locLn, &locCol);
+		cursorLocation(cur, &locFileName, &loc);
 
 		if (clang_Cursor_isNull(target) || clang_getCursorType(target).kind == CXType_FunctionNoProto)
 		{
 			/* function decl not found */
 			fprintf(stderr,
-				"%s:%d:%d: Warning: can't check call to %s (can't find original definition).\n",
-				clang_getCString(locFileName), locLn, locCol,
+				"%s:%zu:%zu: Warning: can't check call to %s (can't find original definition).\n",
+				clang_getCString(locFileName), loc.line, loc.col,
 				clang_getCString(funcName)
 			);
 		}
@@ -222,10 +215,8 @@ static enum CXChildVisitResult visitation(CXCursor cur, CXCursor parent, CXClien
 						dstate->superProc(
 							clang_getCString(locFileName),
 							clang_getCString(funcName),
-							dstate->castLoc.startLn,
-							dstate->castLoc.startCol,
-							dstate->castLoc.endLn,
-							dstate->castLoc.endCol
+							dstate->castLoc.startLoc,
+							dstate->castLoc.endLoc
 						);
 					}
 					break;
@@ -239,8 +230,7 @@ static enum CXChildVisitResult visitation(CXCursor cur, CXCursor parent, CXClien
 						dstate->missProc(
 							clang_getCString(locFileName),
 							clang_getCString(funcName),
-							locLn,
-							locCol
+							loc
 						);
 					}
 					break;
