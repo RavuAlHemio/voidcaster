@@ -9,6 +9,9 @@
  * @date 2011-04-12
  */
 
+#ifndef __MSA_H__
+#define __MSA_H__
+
 #include <stdlib.h>
 
 /** The Magical String Array structure. */
@@ -82,3 +85,5 @@ void msa_sort(msa_t *msa);
  * @return 1 on success, 0 on failure (setting errno appropriately).
  */
 int msa_add_prefixed(msa_t *msa, const char *fst, const char *snd);
+
+#endif

@@ -5,6 +5,10 @@
  *
  * @brief Data structures shared by multiple modules.
  */
+
+#ifndef __SHARED_H__
+#define __SHARED_H__
+
 #include <stdlib.h>
 
 /** The name of the running binary, taken from argv[0]. */
@@ -47,3 +51,5 @@ enum exitcodes_e
 	/** Memory management error. */
 	EXITCODE_MM = 6
 };
+
+#endif

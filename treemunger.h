@@ -6,6 +6,9 @@
  * @brief C Abstract Syntax Tree--munging code
  */
 
+#ifndef __TREEMUNGER_H__
+#define __TREEMUNGER_H__
+
 #include <clang-c/Index.h>
 
 #include "shared.h"
@@ -47,3 +50,5 @@ enum exitcodes_e processFile(
 	missingVoidProc missProc,
 	superfluousVoidProc superProc
 );
+
+#endif
