@@ -247,22 +247,22 @@ static enum CXChildVisitResult visitation(CXCursor cur, CXCursor parent, CXClien
 	else
 	{
 		/* the location info */
-		unsigned int locLn, locCol;
+		module_loc_t loc;
 
 		CXString cursDesc = clang_getCursorDisplayName(cur);
 		CXString cursKind = clang_getCursorKindSpelling(clang_getCursorKind(cur));
 
 		disposeFileName = true;
 
-		cursorLocation(cur, &locFileName, &locLn, &locCol);
+		cursorLocation(cur, &locFileName, &loc);
 
 		printf(
-			"At level %zu, visiting node of kind %s named %s at %s:%u:%u.\n",
+			"At level %zu, visiting node of kind %s named %s at %s:%zu:%zu.\n",
 			dstate->level,
 			clang_getCString(cursKind),
 			clang_getCString(cursDesc),
 			clang_getCString(locFileName),
-			locLn, locCol
+			loc.line, loc.col
 		);
 
 		clang_disposeString(cursKind);
