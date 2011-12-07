@@ -414,7 +414,7 @@ static enum CXChildVisitResult visitation(CXCursor cur, CXCursor parent, CXClien
  * @param args aruments to Clang, or NULL if argcount is zero
  * @return EXITCODE_OK, or the exit code which should be returned after cleanup
  */
-static enum exitcodes_e process_file(
+static enum exitcodes_e processFile(
 	CXIndex idx,
 	const char *filename,
 	unsigned int argcount,
@@ -592,7 +592,7 @@ int main(int argc, char **argv)
 	/* process each file in turn */
 	for (i = optind; i < argc; ++i)
 	{
-		ret = process_file(idx, argv[i], clangargs.count, (const char **)clangargs.arr);
+		ret = processFile(idx, argv[i], clangargs.count, (const char **)clangargs.arr);
 		if (ret != EXITCODE_OK)
 		{
 			/* process_file already printed a diagnostic; just stop */
