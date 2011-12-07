@@ -1,5 +1,9 @@
 #include <stdio.h>
 
+void i_return_nothing(void)
+{
+}
+
 void this_one_is_correct(void)
 {
 	int charz;
@@ -45,4 +49,7 @@ void this_one_is_wrong(void)
 	{
 		/* do nothing, but do something anyway! */
 	}
+
+	/* finally, a pointless cast to void */
+	(void)i_return_nothing();
 }
