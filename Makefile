@@ -30,9 +30,14 @@ endif
 
 -include config.mk
 
+OBJECTS= \
+	voidcaster.o \
+	msa.o \
+	treemunger.o
+
 all: voidcaster
 
-voidcaster: voidcaster.o msa.o treemunger.o
+voidcaster: $(OBJECTS)
 	@echo LINK $@
 	$(Q)$(CXX) $(LDFLAGS) $(CLDFLAGS) -o $@ $(LIBS) $^ $(LIBS)
 
@@ -42,7 +47,7 @@ voidcaster: voidcaster.o msa.o treemunger.o
 
 clean:
 	rm -f voidcaster
-	rm -f voidcaster.o msa.o treemunger.o
+	rm -f $(OBJECTS)
 
 # force rebuild if config changes
 ifneq ($(wildcard config.mk),)
