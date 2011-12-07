@@ -66,6 +66,25 @@ typedef struct
 
 	/** Are we preceded by a compound statement? */
 	bool compoundStmtAbove;
+
+	/** The location of the cast to void. Valid iff voidCastAbove. */
+	struct
+	{
+		/** The file. */
+		const char *file;
+
+		/** The line where the cast begins. */
+		size_t startLn;
+
+		/** The column where the cast begins. */
+		size_t startCol;
+
+		/** The line where the cast ends. */
+		size_t endLn;
+
+		/** The column where the cast ends. */
+		size_t endCol;
+	} castLoc;
 } descent_state;
 
 /** Has there been a suggestion? */
@@ -112,6 +131,40 @@ static void usage(void)
 }
 
 /**
+ * Acts upon a missing cast to void.
+ *
+ * @param file the name of the file where the cast is missing
+ * @param func the name of the function called
+ * @param line the line on which the cast should be inserted
+ * @param col the column in which the cast should be inserted
+ */
+static void actUponMissingVoid(const char *file, const char *func, size_t line, size_t col)
+{
+	fprintf(stderr,
+		"%s:%zu:%zu: Missing cast to void when calling function %s.\n",
+		file, line, col, func
+	);
+}
+
+/**
+ * Acts upon a superfluous cast to void.
+ *
+ * @param file the name of the file containing the cast
+ * @param func the name of the function called
+ * @param startLine the line on which the cast starts
+ * @param startCol the column in which the cast starts
+ * @param stopLine the line on which the cast ends
+ * @param stopCol the column in which the cast ends
+ */
+static void actUponSuperfluousVoid(const char *file, const char *func, size_t startLine, size_t startCol, size_t stopLine, size_t stopCol)
+{
+	fprintf(stderr,
+		"%s:%zu:%zu: Pointless cast to void when calling function %s.\n",
+		file, startLine, startCol, func
+	);
+}
+
+/**
  * Stores the location information from the cursor into the parameters
  * passed by reference.
  *
@@ -127,6 +180,78 @@ static inline void cursorLocation(CXCursor cur, CXString *locFileName, unsigned 
 }
 
 /**
+ * Returns the extent of the cast referenced by the given cursor.
+ *
+ * @param cur cursor to C-style cast whose extent to obtain
+ * @param startLine the line where the cast begins
+ * @param startCol the column where the cast begins
+ * @param stopLine the line where the cast ends
+ * @param stopCol the column where the cast ends
+ */
+static inline void castExtent(CXCursor cur, size_t *startLine, size_t *startCol, size_t *stopLine, size_t *stopCol)
+{
+	CXToken *toks;
+	CXCursor *curs;
+	CXTranslationUnit tu = clang_Cursor_getTranslationUnit(cur);
+	CXSourceRange curExt;
+	unsigned int numToks, i;
+	bool startSet = false;
+
+	assert(clang_getCursorKind(cur) == CXCursor_CStyleCastExpr);
+
+	/* where is it? */
+	CXSourceRange rng = clang_getCursorExtent(cur);
+
+	/* tokenize the cast */
+	clang_tokenize(tu, rng, &toks, &numToks);
+
+	/* annotate it */
+	curs = malloc(numToks * sizeof(CXCursor));
+	if (curs == NULL)
+	{
+		perror("malloc");
+		exit(EXITCODE_MM);
+	}
+	clang_annotateTokens(tu, toks, numToks, curs);
+
+	/* find the tokens which correspond to the cursor */
+	for (i = 0; i < numToks; ++i)
+	{
+		CXSourceRange tokExt;
+		unsigned int newEL, newEC;
+
+		if (
+			clang_getCursorKind(cur) != clang_getCursorKind(curs[i]) ||
+			!clang_equalTypes(clang_getCursorType(cur), clang_getCursorType(curs[i]))
+		)
+		{
+			/* not part of our cast anymore */
+			break;
+		}
+
+		/* fetch token range */
+		tokExt = clang_getTokenExtent(tu, toks[i]);
+		clang_getPresumedLocation(clang_getRangeEnd(tokExt), NULL, &newEL, &newEC);
+
+		if (!startSet)
+		{
+			unsigned int newSL, newSC;
+			clang_getPresumedLocation(clang_getRangeStart(tokExt), NULL, &newSL, &newSC);
+			*startLine = newSL;
+			*startCol = newSC;
+			startSet = true;
+		}
+
+		*stopLine = newEL;
+		*stopCol = newEC;
+	}
+
+	/* free cursors, free tokens */
+	free(curs);
+	clang_disposeTokens(tu, toks, numToks);
+}
+
+/**
  * Called upon every node visited in a translation unit.
  *
  * @param cur the cursor pointing to the node
@@ -135,6 +260,9 @@ static inline void cursorLocation(CXCursor cur, CXString *locFileName, unsigned 
  */
 static enum CXChildVisitResult visitation(CXCursor cur, CXCursor parent, CXClientData dta)
 {
+	CXString locFileName;
+	bool disposeFileName = false;
+
 	descent_state *dstate = (descent_state *)dta;
 	descent_state kiddstate = {
 		.level = dstate->level + 1,
@@ -156,7 +284,20 @@ static enum CXChildVisitResult visitation(CXCursor cur, CXCursor parent, CXClien
 		if (clang_getCursorType(cur).kind == CXType_Void)
 		{
 			/* yay! */
+			disposeFileName = true;
+
+			/* fetch location info */
+			castExtent(
+				cur,
+				&kiddstate.castLoc.startLn,
+				&kiddstate.castLoc.startCol,
+				&kiddstate.castLoc.endLn,
+				&kiddstate.castLoc.endCol
+			);
+
+			/* store it for the kid */
 			kiddstate.voidCastAbove = true;
+			kiddstate.castLoc.file = clang_getCString(locFileName);
 		}
 	}
 	else if (curKind == CXCursor_CallExpr)
@@ -167,9 +308,10 @@ static enum CXChildVisitResult visitation(CXCursor cur, CXCursor parent, CXClien
 		CXCursor target = clang_getCursorReferenced(cur);
 		/* the location info */
 		unsigned int locLn, locCol;
-		CXString locFileName;
 		/* the type of the function and its return type */
 		CXType retType;
+
+		disposeFileName = true;
 
 		cursorLocation(cur, &locFileName, &locLn, &locCol);
 
@@ -181,42 +323,44 @@ static enum CXChildVisitResult visitation(CXCursor cur, CXCursor parent, CXClien
 				clang_getCString(locFileName), locLn, locCol,
 				clang_getCString(funcName)
 			);
-
-			clang_disposeString(funcName);
-			clang_disposeString(locFileName);
-			return CXChildVisit_Continue;
 		}
-
-		switch (clang_getCursorResultType(target).kind)
+		else
 		{
-			case CXType_Void:
-				if (dstate->voidCastAbove)
-				{
-					fprintf(stderr,
-						"%s:%d:%d: Pointless cast to void when calling function %s.\n",
-						clang_getCString(locFileName), locLn, locCol,
-						clang_getCString(funcName)
-					);
-				}
-				break;
-			case CXType_Invalid:
-			case CXType_Unexposed:
-				/* can't judge; skip */
-				break;
-			default:
-				if (dstate->compoundStmtAbove && !dstate->voidCastAbove)
-				{
-					fprintf(stderr,
-						"%s:%d:%d: Missing cast to void when calling function %s.\n",
-						clang_getCString(locFileName), locLn, locCol,
-						clang_getCString(funcName)
-					);
-				}
-				break;
+			switch (clang_getCursorResultType(target).kind)
+			{
+				case CXType_Void:
+					if (dstate->voidCastAbove)
+					{
+						/* magic! */
+						actUponSuperfluousVoid(
+							clang_getCString(locFileName),
+							clang_getCString(funcName),
+							dstate->castLoc.startLn,
+							dstate->castLoc.startCol,
+							dstate->castLoc.endLn,
+							dstate->castLoc.endCol
+						);
+					}
+					break;
+				case CXType_Invalid:
+				case CXType_Unexposed:
+					/* can't judge; skip */
+					break;
+				default:
+					if (dstate->compoundStmtAbove && !dstate->voidCastAbove)
+					{
+						actUponMissingVoid(
+							clang_getCString(locFileName),
+							clang_getCString(funcName),
+							locLn,
+							locCol
+						);
+					}
+					break;
+			}
 		}
 
 		clang_disposeString(funcName);
-		clang_disposeString(locFileName);
 	}
 	else if (curKind == CXCursor_BinaryOperator)
 	{
@@ -227,10 +371,11 @@ static enum CXChildVisitResult visitation(CXCursor cur, CXCursor parent, CXClien
 	{
 		/* the location info */
 		unsigned int locLn, locCol;
-		CXString locFileName;
 
 		CXString cursDesc = clang_getCursorDisplayName(cur);
 		CXString cursKind = clang_getCursorKindSpelling(clang_getCursorKind(cur));
+
+		disposeFileName = true;
 
 		cursorLocation(cur, &locFileName, &locLn, &locCol);
 
@@ -243,7 +388,6 @@ static enum CXChildVisitResult visitation(CXCursor cur, CXCursor parent, CXClien
 			locLn, locCol
 		);
 
-		clang_disposeString(locFileName);
 		clang_disposeString(cursKind);
 		clang_disposeString(cursDesc);
 	}
@@ -255,6 +399,9 @@ static enum CXChildVisitResult visitation(CXCursor cur, CXCursor parent, CXClien
 		visitation,
 		(CXClientData)&kiddstate
 	);
+
+	if (disposeFileName)
+		clang_disposeString(locFileName);
 
 	return CXChildVisit_Continue;
 }
