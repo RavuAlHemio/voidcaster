@@ -3,6 +3,7 @@ llp=/usr/local
 CC=clang
 CXX=clang++
 CPPFLAGS=-I$(llp)/include
+CFLAGS=-Wall
 LIBS= \
 	$(llp)/lib/liblibclang.a \
 	$(llp)/lib/libclangSema.a \
@@ -41,7 +42,7 @@ voidcaster: voidcaster.o msa.o treemunger.o
 
 clean:
 	rm -f voidcaster
-	rm -f voidcaster.o
+	rm -f voidcaster.o msa.o treemunger.o
 
 # force rebuild if config changes
 ifneq ($(wildcard config.mk),)
