@@ -69,14 +69,14 @@ static void usage(void)
 }
 
 /**
- * Acts upon a missing cast to void.
+ * Warns about a missing cast to void.
  *
  * @param file the name of the file where the cast is missing
  * @param func the name of the function called
  * @param line the line on which the cast should be inserted
  * @param col the column in which the cast should be inserted
  */
-static void actUponMissingVoid(const char *file, const char *func, size_t line, size_t col)
+static void warnMissingVoid(const char *file, const char *func, size_t line, size_t col)
 {
 	fprintf(stderr,
 		"%s:%zu:%zu: Missing cast to void when calling function %s.\n",
@@ -85,7 +85,7 @@ static void actUponMissingVoid(const char *file, const char *func, size_t line, 
 }
 
 /**
- * Acts upon a superfluous cast to void.
+ * Warns about a superfluous cast to void.
  *
  * @param file the name of the file containing the cast
  * @param func the name of the function called
@@ -94,7 +94,7 @@ static void actUponMissingVoid(const char *file, const char *func, size_t line, 
  * @param stopLine the line on which the cast ends
  * @param stopCol the column in which the cast ends
  */
-static void actUponSuperfluousVoid(const char *file, const char *func, size_t startLine, size_t startCol, size_t stopLine, size_t stopCol)
+static void warnSuperfluousVoid(const char *file, const char *func, size_t startLine, size_t startCol, size_t stopLine, size_t stopCol)
 {
 	fprintf(stderr,
 		"%s:%zu:%zu: Pointless cast to void when calling function %s.\n",
@@ -221,8 +221,8 @@ int main(int argc, char **argv)
 			argv[i],
 			clangargs.count,
 			(const char **)clangargs.arr,
-			actUponMissingVoid,
-			actUponSuperfluousVoid
+			warnMissingVoid,
+			warnSuperfluousVoid
 		);
 
 		if (ret != EXITCODE_OK)
