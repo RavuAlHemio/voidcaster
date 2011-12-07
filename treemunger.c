@@ -81,7 +81,6 @@ static inline void castExtent(CXCursor cur, size_t *startLine, size_t *startCol,
 	CXToken *toks;
 	CXCursor *curs;
 	CXTranslationUnit tu = clang_Cursor_getTranslationUnit(cur);
-	CXSourceRange curExt;
 	unsigned int numToks, i;
 	bool startSet = false;
 
@@ -198,8 +197,6 @@ static enum CXChildVisitResult visitation(CXCursor cur, CXCursor parent, CXClien
 		CXCursor target = clang_getCursorReferenced(cur);
 		/* the location info */
 		unsigned int locLn, locCol;
-		/* the type of the function and its return type */
-		CXType retType;
 
 		disposeFileName = true;
 
