@@ -123,8 +123,8 @@ static void usage(void)
 		" 4  if -s is set and a suggestion was given\n"
 		" 5  if memory management fails\n"
 		"\n"
-		"Report voidcaster bugs to ondrej.hosek@tuwien.ac.at\n"
-		"voidcaster home page: none yet\n",
+		"Report voidcaster bugs on the home page.\n"
+		"voidcaster home page: http://github.com/RavuAlHemio/voidcaster\n",
 		progname
 	);
 	exit(EXITCODE_USAGE);
