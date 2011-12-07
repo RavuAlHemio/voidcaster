@@ -33,7 +33,8 @@ endif
 OBJECTS= \
 	voidcaster.o \
 	msa.o \
-	treemunger.o
+	treemunger.o \
+	interact.o
 
 all: voidcaster
 

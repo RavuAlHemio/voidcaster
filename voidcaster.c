@@ -17,6 +17,7 @@
 
 #include "msa.h"
 #include "treemunger.h"
+#include "interact.h"
 
 /* make getopt accept -g option iff a system include path was specified */
 #ifdef GCC_SYSINCLUDE
@@ -126,7 +127,8 @@ int main(int argc, char **argv)
 #ifdef GCC_SYSINCLUDE
 	bool inclgcc = true;
 #endif
-
+	missingVoidProc missProc = warnMissingVoid;
+	superfluousVoidProc superProc = warnSuperfluousVoid;
 	msa_t clangargs;
 
 	if (argc > 0)
@@ -203,6 +205,13 @@ int main(int argc, char **argv)
 	}
 #endif
 
+	if (interactive)
+	{
+		/* swap functions */
+		missProc = interactMissingVoid;
+		superProc = interactSuperfluousVoid;
+	}
+
 	/* fetch clang index */
 	CXIndex idx = clang_createIndex(0, 0);
 	if (idx == NULL)
@@ -220,8 +229,8 @@ int main(int argc, char **argv)
 			argv[i],
 			clangargs.count,
 			(const char **)clangargs.arr,
-			warnMissingVoid,
-			warnSuperfluousVoid
+			missProc,
+			superProc
 		);
 
 		if (ret != EXITCODE_OK)
