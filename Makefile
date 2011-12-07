@@ -31,7 +31,7 @@ endif
 
 all: voidcaster
 
-voidcaster: voidcaster.o msa.o
+voidcaster: voidcaster.o msa.o treemunger.o
 	@echo LINK $@
 	$(Q)$(CXX) $(LDFLAGS) $(CLDFLAGS) -o $@ $(LIBS) $^ $(LIBS)
 
