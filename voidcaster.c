@@ -25,8 +25,8 @@
 #define GETOPT_G ""
 #endif
 
-/** Has there been a suggestion? */
-static bool suggest = false;
+/** True if a suggestion was given. */
+static bool suggested = false;
 
 /* initialize here */
 const char *progname = "<not set>";
@@ -82,6 +82,7 @@ static void warnMissingVoid(const char *file, const char *func, size_t line, siz
 		"%s:%zu:%zu: Missing cast to void when calling function %s.\n",
 		file, line, col, func
 	);
+	suggested = true;
 }
 
 /**
@@ -100,6 +101,7 @@ static void warnSuperfluousVoid(const char *file, const char *func, size_t start
 		"%s:%zu:%zu: Pointless cast to void when calling function %s.\n",
 		file, startLine, startCol, func
 	);
+	suggested = true;
 }
 
 /**
@@ -235,6 +237,11 @@ int main(int argc, char **argv)
 	/* clean up */
 	clang_disposeIndex(idx);
 	msa_destroy(&clangargs);
+
+	if (ret == EXITCODE_OK && extstatus && suggested)
+	{
+		ret = EXITCODE_EXT_SUGGEST;
+	}
 
 	return ret;
 }
