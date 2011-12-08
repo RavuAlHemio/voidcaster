@@ -18,7 +18,8 @@ Report bugs on github! http://github.com/RavuAlHemio/voidcaster
 How?
 ----
 
-One word: [libclang](http://clang.llvm.org/doxygen/group__CINDEX.html).
+One word: [libclang](http://clang.llvm.org/doxygen/group__CINDEX.html). Which is
+a bit unfortunate, because LLVM is quite a big dependency.
 
 Why?
 ----
