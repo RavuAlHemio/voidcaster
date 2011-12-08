@@ -9,9 +9,9 @@ call to `void` because you are ignoring the return value, or not to cast a
 function which doesn't return a value to `void`.
 
 Currently, it outputs a warning for every missing/superfluous cast encountered.
-Eventually, it will support an interactive mode where it's sufficient to answer
-a *you're not casting this to `void`; should I cast it for you?* prompt and
-the source file is modified accordingly.
+Alternatively, it can run in *interactive mode*, where it's sufficient to answer
+a set of *you're not casting this to `void`; should I cast it for you?* prompts
+and the source files are modified accordingly.
 
 Report bugs on github! http://github.com/RavuAlHemio/voidcaster
 
