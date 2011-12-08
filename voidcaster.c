@@ -240,6 +240,13 @@ int main(int argc, char **argv)
 		}
 	}
 
+	if (interactive)
+	{
+		/* perform interactive changes, hoping that nothing breaks */
+		performModifs();
+		disposeModifs();
+	}
+
 	/* clean up */
 	clang_disposeIndex(idx);
 	msa_destroy(&clangargs);
