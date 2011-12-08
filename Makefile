@@ -54,7 +54,8 @@ clean:
 voidcaster.c: version.h
 
 version.h: FORCE
-	echo "#define GIT_REVINFO \"$(shell git log -1 HEAD --pretty=format:"revision %h from %ai")\"" > version.h
+	@echo Updating $@
+	$(Q)echo "#define GIT_REVINFO \"$(shell git log -1 HEAD --pretty=format:"revision %h from %ai")\"" > version.h
 
 FORCE:
 
