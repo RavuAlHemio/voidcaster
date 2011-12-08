@@ -32,16 +32,19 @@ void this_one_is_wrong(void)
 {
 	int i;
 
+	/* this call is to an undeclared function */
+	call_to_undeclared_function();
+
 	/* these calls require casting to void */
 
 	/* directly in a function */
-	(void)printf("This is a test.\n");
+	printf("This is a test.\n");
 
 	if (1 > 0)
 	{
 		/* multiple calls in a compound statement (if) */
-		(void)printf("first\n");
-		(void)printf("second\n");
+		printf("first\n");
+		printf("second\n");
 	}
 
 	/* abuse the condition field */
@@ -51,13 +54,30 @@ void this_one_is_wrong(void)
 	}
 
 	/* finally, a pointless cast to void */
-	i_return_nothing();
+	(void)i_return_nothing();
 
 	/* and the same, split over multiple lines */
-	
+	(
+		/* we interrupt this cast to bring you breaking news */
+		void
+		/* sorry, false alarm */
+	)
+
+	/* try to fill the spaces in between */
 
 	i_return_nothing();
 
 	/* okay, I went overboard with the comments. */
-	i_return_nothing();
+	(
+
+
+
+	void
+
+
+
+
+
+
+	)i_return_nothing();
 }
