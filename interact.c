@@ -417,8 +417,6 @@ void interactSuperfluousVoid(const char *file, const char *func, module_loc_t st
 	myCol = startOffset + 1;
 	for (endOffset = startOffset; endOffset < lineslen; ++endOffset)
 	{
-		printf("line %zu col %zu off %zu char 0x%02hhx %c\n", myLine, myCol, endOffset, lines[endOffset], lines[endOffset]);
-
 		if (myLine == end.line && myCol == end.col)
 		{
 			break;
@@ -507,8 +505,6 @@ static inline void copyRest(FILE *from, FILE *to)
  */
 static inline void overwriteWithBackup(const char *oldP, const char *newP)
 {
-	printf("Gonna overwrite '%s' with '%s'.\n", oldP, newP);
-
 	/* make a backup copy of the read file */
 	char *backFn = malloc(strlen(oldP) + 2);
 	if (backFn == NULL)
@@ -590,10 +586,6 @@ static bool moveFileUntil(FILE *rf, module_loc_t now, module_loc_t target, FILE 
 			++now.col;
 		}
 	}
-
-	printf("Moved file until %zu:%zu; had to until %zu:%zu.\n",
-		now.line, now.col, target.line, target.col
-	);
 
 	/* nailed it! */
 	return true;
