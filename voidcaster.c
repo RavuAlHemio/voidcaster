@@ -9,6 +9,7 @@
  *
  * @author Ondřej Hošek <ondrej.hosek@tuwien.ac.at>
  */
+
 #include <stdbool.h>
 #include <assert.h>
 #include <unistd.h>
@@ -18,6 +19,7 @@
 #include "msa.h"
 #include "treemunger.h"
 #include "interact.h"
+#include "version.h"
 
 /* make getopt accept -g option iff a system include path was specified */
 #ifdef GCC_SYSINCLUDE
@@ -41,6 +43,9 @@ static void usage(void) __attribute__((noreturn));
 static void usage(void)
 {
 	fprintf(stderr,
+		"\n"
+		"Voidcaster " GIT_REVINFO "\n"
+		"\n"
 		"Usage: %s [OPTION]... FILE...\n"
 		"Proposes locations for casts to void in a C program.\n"
 		"\n"

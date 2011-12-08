@@ -47,8 +47,18 @@ voidcaster: $(OBJECTS)
 	$(Q)$(CC) $(CPPFLAGS) $(CFLAGS) $(CLDFLAGS) -c -o $@ $^
 
 clean:
+	rm -f version.h
 	rm -f voidcaster
 	rm -f $(OBJECTS)
+
+voidcaster.c: version.h
+
+version.h: FORCE
+	echo "#define GIT_REVINFO \"$(shell git log -1 HEAD --pretty=format:"revision %h from %ai")\"" > version.h
+
+FORCE:
+
+.PHONY: FORCE
 
 # force rebuild if config changes
 ifneq ($(wildcard config.mk),)
