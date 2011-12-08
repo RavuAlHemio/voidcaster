@@ -612,6 +612,12 @@ void performModifs(void)
 		.col = 1
 	};
 
+	if (numModifs == 0)
+	{
+		/* nothing to do */
+		return;
+	}
+
 	/* first, sort the modifications */
 	qsort(modifs, numModifs, sizeof(*modifs), compareModifs);
 
