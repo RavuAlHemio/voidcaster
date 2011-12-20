@@ -6,12 +6,12 @@ CPPFLAGS=-I$(llp)/include
 CFLAGS=-Wall
 LIBS= \
 	$(llp)/lib/liblibclang.a \
-	$(llp)/lib/libclangSema.a \
-	$(llp)/lib/libclangAnalysis.a \
 	$(llp)/lib/libclangCodeGen.a \
 	$(llp)/lib/libclangFrontend.a \
 	$(llp)/lib/libclangDriver.a \
 	$(llp)/lib/libclangSerialization.a \
+	$(llp)/lib/libclangSema.a \
+	$(llp)/lib/libclangAnalysis.a \
 	$(llp)/lib/libclangParse.a \
 	$(llp)/lib/libclangLex.a \
 	$(llp)/lib/libclangAST.a \
