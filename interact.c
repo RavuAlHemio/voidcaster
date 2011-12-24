@@ -647,7 +647,7 @@ void performModifs(void)
 			}
 
 			/* make a temp file for the output */
-			snprintf(tmpfn, sizeof(tmpfn), "/tmp/voidcasterXXXXXX");
+			snprintf(tmpfn, sizeof(tmpfn)/sizeof(tmpfn[0]), "/tmp/voidcasterXXXXXX");
 			tmpfd = mkstemp(tmpfn);
 			if (tmpfd == -1)
 			{
