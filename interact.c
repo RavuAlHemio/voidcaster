@@ -185,7 +185,7 @@ static bool fetchBoolResponse(void)
 		if (fgets(respbuf, sizeof(respbuf), stdin) == NULL)
 		{
 			/* exit without pomp */
-			printf("Okay, exiting.\n");
+			(void)printf("Okay, exiting.\n");
 			exit(EXITCODE_OK);
 		}
 
@@ -204,8 +204,8 @@ static bool fetchBoolResponse(void)
 			}
 		}
 
-		printf("Please answer y (yes) or n (no): ");
-		fflush(stdout);
+		(void)printf("Please answer y (yes) or n (no): ");
+		(void)fflush(stdout);
 	}
 }
 
@@ -249,7 +249,7 @@ static void fetchFileLines(const char *file, size_t linenum, size_t linecount, c
 	if (filelen == (off_t)-1)
 	{
 		perror("lseek");
-		close(fd);
+		(void)close(fd);
 		*lines = NULL;
 		*lineslen = 0;
 		return;
@@ -258,7 +258,7 @@ static void fetchFileLines(const char *file, size_t linenum, size_t linecount, c
 	if (lseek(fd, 0, SEEK_SET) == (off_t)-1)
 	{
 		perror("lseek");
-		close(fd);
+		(void)close(fd);
 		*lines = NULL;
 		*lineslen = 0;
 		return;
@@ -269,7 +269,7 @@ static void fetchFileLines(const char *file, size_t linenum, size_t linecount, c
 	if (f == MAP_FAILED)
 	{
 		perror("mmap");
-		close(fd);
+		(void)close(fd);
 		*lines = NULL;
 		*lineslen = 0;
 		return;
@@ -291,9 +291,9 @@ static void fetchFileLines(const char *file, size_t linenum, size_t linecount, c
 	if (i >= filelen)
 	{
 		/* line past end of source file O_o */
-		fprintf(stderr, "Line %zu past end of source file %s.\n", linenum, file);
-		munmap(f, filelen);
-		close(fd);
+		(void)fprintf(stderr, "Line %zu past end of source file %s.\n", linenum, file);
+		(void)munmap(f, filelen);
+		(void)close(fd);
 		*lines = NULL;
 		*lineslen = 0;
 		return;
@@ -328,21 +328,27 @@ static void fetchFileLines(const char *file, size_t linenum, size_t linecount, c
 	if (*lines == NULL)
 	{
 		perror("malloc");
-		munmap(f, filelen);
-		close(fd);
+		(void)munmap(f, filelen);
+		(void)close(fd);
 		*lines = NULL;
 		*lineslen = 0;
 		return;
 	}
 
 	/* copy the lines */
-	memcpy(*lines, &f[lnstart], *lineslen);
+	(void)memcpy(*lines, &f[lnstart], *lineslen);
 	/* NUL-terminate */
 	(*lines)[*lineslen] = '\0';
 
 	/* clean up */
-	munmap(f, filelen);
-	close(fd);
+	if (munmap(f, filelen) != 0)
+	{
+		perror("munmap");
+	}
+	if (close(fd) != 0)
+	{
+		perror("close");
+	}
 
 	/* it worked out :-) */
 }
@@ -361,7 +367,7 @@ void interactMissingVoid(const char *file, const char *func, module_loc_t loc)
 		line = "";
 	}
 
-	printf(
+	(void)printf(
 		"\n"
 		"File %s, line %zu:\n"
 		"Missing cast to void when calling function '%s'.\n"
@@ -375,7 +381,7 @@ void interactMissingVoid(const char *file, const char *func, module_loc_t loc)
 		line,
 		(int)loc.col-1, line, line + loc.col-1
 	);
-	fflush(stdout);
+	(void)fflush(stdout);
 
 	if (fetchBoolResponse())
 	{
@@ -437,7 +443,7 @@ void interactSuperfluousVoid(const char *file, const char *func, module_loc_t st
 	/* editors number characters from 1, C from 0 */
 	--endOffset;
 
-	printf(
+	(void)printf(
 		"\n"
 		"File %s, lines %zu through %zu:\n"
 		"Superfluous cast to void when calling function '%s'.\n"
@@ -449,7 +455,7 @@ void interactSuperfluousVoid(const char *file, const char *func, module_loc_t st
 		file, start.line, end.line, func, lines,
 		(int)startOffset, lines, lines + endOffset + 1
 	);
-	fflush(stdout);
+	(void)fflush(stdout);
 
 	if (fetchBoolResponse())
 	{
@@ -513,7 +519,7 @@ static inline void overwriteWithBackup(const char *oldP, const char *newP)
 		return;
 	}
 
-	snprintf(backFn, strlen(oldP)+2, "%s~", oldP);
+	(void)snprintf(backFn, strlen(oldP)+2, "%s~", oldP);
 
 	if (rename(oldP, backFn) != 0)
 	{
@@ -647,12 +653,12 @@ void performModifs(void)
 			}
 
 			/* make a temp file for the output */
-			snprintf(tmpfn, sizeof(tmpfn)/sizeof(tmpfn[0]), "/tmp/voidcasterXXXXXX");
+			(void)snprintf(tmpfn, sizeof(tmpfn)/sizeof(tmpfn[0]), "/tmp/voidcasterXXXXXX");
 			tmpfd = mkstemp(tmpfn);
 			if (tmpfd == -1)
 			{
 				perror("mkstemp");
-				fclose(rf);
+				(void)fclose(rf);
 				return;
 			}
 
@@ -664,8 +670,8 @@ void performModifs(void)
 			if (wf == NULL)
 			{
 				perror("fdopen");
-				close(tmpfd);
-				fclose(rf);
+				(void)close(tmpfd);
+				(void)fclose(rf);
 				return;
 			}
 
@@ -686,13 +692,13 @@ void performModifs(void)
 				if (!moveFileUntil(rf, curLoc, modifs[i].insert.where, wf))
 				{
 					/* crud. */
-					fprintf(stderr, "I/O troubles...\n");
-					fclose(rf);
-					fclose(wf);
+					(void)fprintf(stderr, "I/O troubles...\n");
+					(void)fclose(rf);
+					(void)fclose(wf);
 					return;
 				}
 				/* write out the string to insert */
-				fprintf(wf, "%s", modifs[i].insert.what);
+				(void)fprintf(wf, "%s", modifs[i].insert.what);
 				/* update current location */
 				curLoc = modifs[i].insert.where;
 				break;
@@ -701,18 +707,18 @@ void performModifs(void)
 				if (!moveFileUntil(rf, curLoc, modifs[i].remove.fromWhere, wf))
 				{
 					/* crud. */
-					fprintf(stderr, "I/O troubles...\n");
-					fclose(rf);
-					fclose(wf);
+					(void)fprintf(stderr, "I/O troubles...\n");
+					(void)fclose(rf);
+					(void)fclose(wf);
 					return;
 				}
 				/* skip until the end point */
 				if (!moveFileUntil(rf, modifs[i].remove.fromWhere, modifs[i].remove.toWhere, NULL))
 				{
 					/* crud. */
-					fprintf(stderr, "I/O troubles...\n");
-					fclose(rf);
-					fclose(wf);
+					(void)fprintf(stderr, "I/O troubles...\n");
+					(void)fclose(rf);
+					(void)fclose(wf);
 					return;
 				}
 				/* update current location */
@@ -725,9 +731,9 @@ void performModifs(void)
 	if (rf != NULL && wf != NULL)
 		copyRest(rf, wf);
 	if (rf != NULL)
-		fclose(rf);
+		(void)fclose(rf);
 	if (wf != NULL)
-		fclose(wf);
+		(void)fclose(wf);
 
 	/* replace read file with write file one last time */
 	overwriteWithBackup(rFn, wFn);

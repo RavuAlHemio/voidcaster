@@ -42,7 +42,7 @@ static void usage(void) __attribute__((noreturn));
 
 static void usage(void)
 {
-	fprintf(stderr,
+	(void)fprintf(stderr,
 		"\n"
 		"Voidcaster " GIT_REVINFO "\n"
 		"\n"
@@ -83,7 +83,7 @@ static void usage(void)
  */
 static void warnMissingVoid(const char *file, const char *func, module_loc_t loc)
 {
-	fprintf(stderr,
+	(void)fprintf(stderr,
 		"%s:%zu:%zu: Missing cast to void when calling function %s.\n",
 		file, loc.line, loc.col, func
 	);
@@ -100,7 +100,7 @@ static void warnMissingVoid(const char *file, const char *func, module_loc_t loc
  */
 static void warnSuperfluousVoid(const char *file, const char *func, module_loc_t start, module_loc_t end)
 {
-	fprintf(stderr,
+	(void)fprintf(stderr,
 		"%s:%zu:%zu: Pointless cast to void when calling function %s.\n",
 		file, start.line, start.col, func
 	);
@@ -193,7 +193,7 @@ int main(int argc, char **argv)
 	if (optind == argc)
 	{
 		/* no file has been specified */
-		fprintf(stderr, "%s: no file specified\n", progname);
+		(void)fprintf(stderr, "%s: no file specified\n", progname);
 		msa_destroy(&clangargs);
 		usage();
 	}
@@ -221,7 +221,7 @@ int main(int argc, char **argv)
 	CXIndex idx = clang_createIndex(0, 0);
 	if (idx == NULL)
 	{
-		fprintf(stderr, "%s: clang index creation failed\n", progname);
+		(void)fprintf(stderr, "%s: clang index creation failed\n", progname);
 		msa_destroy(&clangargs);
 		exit(EXITCODE_CLANG_FAIL);
 	}

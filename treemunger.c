@@ -198,7 +198,7 @@ static enum CXChildVisitResult visitation(CXCursor cur, CXCursor parent, CXClien
 		if (clang_Cursor_isNull(target) || clang_getCursorType(target).kind == CXType_FunctionNoProto)
 		{
 			/* function decl not found */
-			fprintf(stderr,
+			(void)fprintf(stderr,
 				"%s:%zu:%zu: Warning: can't check call to %s (can't find original definition).\n",
 				clang_getCString(locFileName), loc.line, loc.col,
 				clang_getCString(funcName)
@@ -256,7 +256,7 @@ static enum CXChildVisitResult visitation(CXCursor cur, CXCursor parent, CXClien
 
 		cursorLocation(cur, &locFileName, &loc);
 
-		printf(
+		(void)printf(
 			"At level %zu, visiting node of kind %s named %s at %s:%zu:%zu.\n",
 			dstate->level,
 			clang_getCString(cursKind),
@@ -271,7 +271,7 @@ static enum CXChildVisitResult visitation(CXCursor cur, CXCursor parent, CXClien
 #endif
 
 	/* continue recursively */
-	clang_visitChildren(
+	(void)clang_visitChildren(
 		cur,
 		visitation,
 		(CXClientData)&kiddstate
@@ -314,7 +314,7 @@ enum exitcodes_e processFile(
 	);
 	if (tu == NULL)
 	{
-		fprintf(stderr, "%s: error parsing %s\n", progname, filename);
+		(void)fprintf(stderr, "%s: error parsing %s\n", progname, filename);
 		return EXITCODE_CLANG_FAIL;
 	}
 
@@ -325,11 +325,11 @@ enum exitcodes_e processFile(
 		CXString diagStr = clang_formatDiagnostic(diag, clang_defaultDiagnosticDisplayOptions());
 
 		/* output the diagnostic message */
-		fprintf(stderr, "%s\n", clang_getCString(diagStr));
+		(void)fprintf(stderr, "%s\n", clang_getCString(diagStr));
 
 		if (clang_getDiagnosticSeverity(diag) >= CXDiagnostic_Error)
 		{
-			fprintf(stderr, "Aborting parse.\n");
+			(void)fprintf(stderr, "Aborting parse.\n");
 			clang_disposeString(diagStr);
 			clang_disposeDiagnostic(diag);
 			clang_disposeTranslationUnit(tu);
@@ -341,7 +341,7 @@ enum exitcodes_e processFile(
 	}
 
 	/* okay, time do to the magic */
-	clang_visitChildren(
+	(void)clang_visitChildren(
 		clang_getTranslationUnitCursor(tu),
 		visitation,
 		(CXClientData)&dstate
