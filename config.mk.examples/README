@@ -1,0 +1,4 @@
+This directory contains examples of config.mk files. These files may be placed
+in the root source directory of the Voidcaster (next to the Makefile) to adapt
+the build options to a given platform. Of course, you may write a config.mk
+file yourself or adapt an existing one to the needs of your system.
