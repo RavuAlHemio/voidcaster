@@ -6,7 +6,17 @@ version.h
 *.swp
 
 # build config
-config.mk
+Makefile.in
+Makefile
+configure
+aclocal.m4
+autom4te.cache
+depcomp
+install-sh
+missing
+config.log
+config.status
+.deps
 
 # backup files
 *~
