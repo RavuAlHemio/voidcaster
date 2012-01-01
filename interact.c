@@ -58,7 +58,7 @@ typedef struct modif_s
 			/** The inclusive location where the removal ends. */
 			module_loc_t toWhere;
 		} remove;
-	};
+	} m;
 } modif_t;
 
 /** The modifications to be performed in interactive mode. */
@@ -77,9 +77,11 @@ static inline module_loc_t modifCharacteristicLoc(const modif_t *mod)
 	switch (mod->type)
 	{
 		case MODIF_INSERT:
-			return mod->insert.where;
+			return mod->m.insert.where;
 		case MODIF_REMOVE:
-			return mod->remove.fromWhere;
+			return mod->m.remove.fromWhere;
+		default:
+			assert(0 && "Unknown modification location.");
 	}
 }
 
@@ -158,7 +160,7 @@ void disposeModifs(void)
 		switch (modifs[i].type)
 		{
 			case MODIF_INSERT:
-				free(modifs[i].insert.what);
+				free(modifs[i].m.insert.what);
 				break;
 			case MODIF_REMOVE:
 				break;
@@ -226,9 +228,9 @@ static void fetchFileLines(const char *file, size_t linenum, size_t linecount, c
 {
 	int fd;
 	char *f;
-	off_t filelen;
+	off_t i, filelen, lnstart;
 	size_t ourline = 1;	/*< we're on this line */
-	size_t i, lnstart, runlncount;
+	size_t runlncount;
 
 	assert(linecount > 0);
 
@@ -355,8 +357,8 @@ static void fetchFileLines(const char *file, size_t linenum, size_t linecount, c
 
 void interactMissingVoid(const char *file, const char *func, module_loc_t loc)
 {
-	char *line;
-	size_t linelen;
+	char *line = NULL;
+	size_t linelen = 0;
 
 	/* fetch the line */
 	fetchFileLines(file, loc.line, 1, &line, &linelen);
@@ -364,7 +366,7 @@ void interactMissingVoid(const char *file, const char *func, module_loc_t loc)
 	if (line == NULL)
 	{
 		/* crud. */
-		line = "";
+		line = strdup("");
 	}
 
 	(void)printf(
@@ -389,9 +391,11 @@ void interactMissingVoid(const char *file, const char *func, module_loc_t loc)
 		modif_t newFix = {
 			.file = strdup(file),
 			.type = MODIF_INSERT,
-			.insert = {
-				.where = loc,
-				.what = strdup("(void)")
+			.m = {
+				.insert = {
+					.where = loc,
+					.what = strdup("(void)")
+				}
 			}
 		};
 
@@ -402,8 +406,7 @@ void interactMissingVoid(const char *file, const char *func, module_loc_t loc)
 		}
 	}
 
-	if (linelen != 0)
-		free(line);
+	free(line);
 }
 
 void interactSuperfluousVoid(const char *file, const char *func, module_loc_t start, module_loc_t end)
@@ -463,9 +466,11 @@ void interactSuperfluousVoid(const char *file, const char *func, module_loc_t st
 		modif_t newFix = {
 			.file = strdup(file),
 			.type = MODIF_REMOVE,
-			.remove = {
-				.fromWhere = start,
-				.toWhere = end
+			.m = {
+				.remove = {
+					.fromWhere = start,
+					.toWhere = end
+				}
 			}
 		};
 
@@ -689,7 +694,7 @@ void performModifs(void)
 		{
 			case MODIF_INSERT:
 				/* copy until given point */
-				if (!moveFileUntil(rf, curLoc, modifs[i].insert.where, wf))
+				if (!moveFileUntil(rf, curLoc, modifs[i].m.insert.where, wf))
 				{
 					/* crud. */
 					(void)fprintf(stderr, "I/O troubles...\n");
@@ -698,13 +703,13 @@ void performModifs(void)
 					return;
 				}
 				/* write out the string to insert */
-				(void)fprintf(wf, "%s", modifs[i].insert.what);
+				(void)fprintf(wf, "%s", modifs[i].m.insert.what);
 				/* update current location */
-				curLoc = modifs[i].insert.where;
+				curLoc = modifs[i].m.insert.where;
 				break;
 			case MODIF_REMOVE:
 				/* copy until starting point */
-				if (!moveFileUntil(rf, curLoc, modifs[i].remove.fromWhere, wf))
+				if (!moveFileUntil(rf, curLoc, modifs[i].m.remove.fromWhere, wf))
 				{
 					/* crud. */
 					(void)fprintf(stderr, "I/O troubles...\n");
@@ -713,7 +718,7 @@ void performModifs(void)
 					return;
 				}
 				/* skip until the end point */
-				if (!moveFileUntil(rf, modifs[i].remove.fromWhere, modifs[i].remove.toWhere, NULL))
+				if (!moveFileUntil(rf, modifs[i].m.remove.fromWhere, modifs[i].m.remove.toWhere, NULL))
 				{
 					/* crud. */
 					(void)fprintf(stderr, "I/O troubles...\n");
@@ -722,7 +727,7 @@ void performModifs(void)
 					return;
 				}
 				/* update current location */
-				curLoc = modifs[i].remove.toWhere;
+				curLoc = modifs[i].m.remove.toWhere;
 				break;
 		}
 	}
