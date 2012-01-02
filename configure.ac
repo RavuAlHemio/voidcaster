@@ -5,7 +5,8 @@ AC_PREREQ([2.59])
 
 dnl Initialize autoconf and automake.
 AC_INIT([voidcaster],[0.0.1],[http://github.com/RavuAlHemio/voidcaster])
-AM_INIT_AUTOMAKE([voidcaster], [0.0.1])
+AM_INIT_AUTOMAKE([silent-rules])
+AM_SILENT_RULES([yes])
 
 dnl Check for C compiler.
 AC_PROG_CXX
@@ -38,6 +39,7 @@ else
 fi
 
 dnl Check for clang.
+dnl FIXME: Implement static linking option.
 AC_SEARCH_LIBS([clang_parseTranslationUnit], [clang libclang], [], AC_MSG_ERROR([libclang is required to build the Voidcaster.]))
 
 dnl Do configuration magic.
