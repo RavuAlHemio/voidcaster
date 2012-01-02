@@ -5,7 +5,7 @@ AC_PREREQ([2.59])
 
 dnl Initialize autoconf and automake.
 AC_INIT([voidcaster],[0.0.1],[http://github.com/RavuAlHemio/voidcaster])
-AM_INIT_AUTOMAKE([silent-rules])
+AM_INIT_AUTOMAKE([foreign])
 AM_SILENT_RULES([yes])
 
 dnl Check for C compiler.
