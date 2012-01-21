@@ -195,7 +195,10 @@ static enum CXChildVisitResult visitation(CXCursor cur, CXCursor parent, CXClien
 
 		cursorLocation(cur, &locFileName, &loc);
 
-		if (clang_Cursor_isNull(target) || clang_getCursorType(target).kind == CXType_FunctionNoProto)
+		if (
+			clang_Cursor_isNull(target) ||
+			clang_equalLocations(clang_getCursorLocation(cur), clang_getCursorLocation(target))
+		)
 		{
 			/* function decl not found */
 			(void)fprintf(stderr,

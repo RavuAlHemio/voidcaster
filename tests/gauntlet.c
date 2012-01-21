@@ -1,5 +1,9 @@
 #include <stdio.h>
 
+/* non-prototype function declaration */
+void not_a_prototype_v();
+int not_a_prototype_i();
+
 void i_return_nothing(void)
 {
 }
@@ -13,6 +17,8 @@ void this_one_is_correct(void)
 	{
 		(void)printf("yay!\n");
 	}
+
+	not_a_prototype_v();
 
 	while (printf("what\n") == 42 && 1 == 3)
 	{
@@ -36,6 +42,9 @@ void this_one_is_wrong(void)
 	call_to_undeclared_function();
 
 	/* these calls require casting to void */
+
+	/* this call is to an unprototyped function */
+	not_a_prototype_i();
 
 	/* directly in a function */
 	printf("This is a test.\n");
