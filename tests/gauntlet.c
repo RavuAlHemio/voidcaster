@@ -18,7 +18,7 @@ void this_one_is_correct(void)
 		(void)printf("yay!\n");
 	}
 
-	not_a_prototype_v();
+	not_a_prototype_v(69);
 
 	while (printf("what\n") == 42 && 1 == 3)
 	{
@@ -44,7 +44,7 @@ void this_one_is_wrong(void)
 	/* these calls require casting to void */
 
 	/* this call is to an unprototyped function */
-	not_a_prototype_i();
+	not_a_prototype_i(1, 2, 3);
 
 	/* directly in a function */
 	printf("This is a test.\n");
