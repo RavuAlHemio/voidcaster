@@ -10,6 +10,7 @@
 #include <stdlib.h>
 
 #include <assert.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
@@ -66,6 +67,86 @@ static modif_t *modifs = NULL;
 
 /** The number of modifications. */
 static size_t numModifs = 0;
+
+/**
+ * Renames a file, copying-and-deleting if the rename fails.
+ *
+ * @param oldpath The current path to the file to rename.
+ * @param newpath The future path to the file to rename.
+ * @return 0 on success, -1 on failure. In the latter case,
+ * errno is set as well.
+ */
+static int robustRename(const char *oldpath, const char *newpath)
+{
+	FILE *rf, *wf;
+	char buf[256];
+	size_t rb, wb;
+
+	/* try "normal" rename first */
+	if (rename(oldpath, newpath) == 0)
+	{
+		/* worked! */
+		return 0;
+	}
+
+#if 0
+	if (errno != EXDEV)
+	{
+		/* not a cross-device move; bail out */
+		return -1;
+	}
+#endif
+
+	/* time to do this the crazy way */
+	rf = fopen(oldpath, "rb");
+	if (rf == NULL)
+	{
+		return -1;
+	}
+
+	wf = fopen(newpath, "wb");
+	if (wf == NULL)
+	{
+		(void)fclose(rf);
+		return -1;
+	}
+
+	do
+	{
+		rb = fread(buf, sizeof(buf[0]), sizeof(buf)/sizeof(buf[0]), rf);
+		wb = fwrite(buf, sizeof(buf[0]), rb, wf);
+
+		if (rb != wb)
+		{
+			/* wrote fewer bytes than read -- something went wrong */
+			(void)fclose(rf);
+			(void)fclose(wf);
+			return -1;
+		}
+	}
+	while (rb > 0);
+
+	if (ferror(rf) || ferror(wf))
+	{
+		/* something went wrong during the loop */
+		(void)fclose(rf);
+		(void)fclose(wf);
+		return -1;
+	}
+
+	if (fclose(wf) == EOF)
+	{
+		(void)fclose(rf);
+		return -1;
+	}
+	if (fclose(rf) == EOF)
+	{
+		return -1;
+	}
+
+	/* now remove the original file */
+	return unlink(oldpath);
+}
 
 /**
  * Returns the characteristic location of the given modification.
@@ -526,7 +607,7 @@ static inline void overwriteWithBackup(const char *oldP, const char *newP)
 
 	(void)snprintf(backFn, strlen(oldP)+2, "%s~", oldP);
 
-	if (rename(oldP, backFn) != 0)
+	if (robustRename(oldP, backFn) != 0)
 	{
 		perror("rename");
 		free(backFn);
@@ -536,7 +617,7 @@ static inline void overwriteWithBackup(const char *oldP, const char *newP)
 	free(backFn);
 
 	/* replace the read file with the write file */
-	if (rename(newP, oldP) != 0)
+	if (robustRename(newP, oldP) != 0)
 	{
 		perror("rename");
 		return;
