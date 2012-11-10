@@ -8,7 +8,8 @@ AC_INIT([voidcaster],[0.0.1],[http://github.com/RavuAlHemio/voidcaster])
 AM_INIT_AUTOMAKE([foreign])
 AM_SILENT_RULES([yes])
 
-dnl Check for C compiler.
+dnl Check for C and C++ compilers.
+AC_PROG_CC
 AC_PROG_CXX
 
 dnl Activate all warnings.
@@ -27,6 +28,9 @@ else
 	CFLAGS="$CFLAGS -O3"
 fi
 
+dnl Force C++ for the next checks.
+AC_LANG_PUSH([C++])
+
 dnl LLVM flags.
 AC_PATH_PROG([LLVM_CONFIG], [llvm-config], [no])
 if test "x$LLVM_CONFIG" != xno
@@ -41,6 +45,9 @@ fi
 dnl Check for clang.
 dnl FIXME: Implement static linking option.
 AC_SEARCH_LIBS([clang_parseTranslationUnit], [clang libclang], [], AC_MSG_ERROR([libclang is required to build the Voidcaster.]))
+
+dnl Good enough.
+dnl AC_LANG_POP
 
 dnl Do configuration magic.
 AC_CONFIG_FILES([Makefile])
