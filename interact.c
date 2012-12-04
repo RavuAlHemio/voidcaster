@@ -162,8 +162,10 @@ static inline module_loc_t modifCharacteristicLoc(const modif_t *mod)
 		case MODIF_REMOVE:
 			return mod->m.remove.fromWhere;
 		default:
-			assert(0 && "Unknown modification location.");
+			break;
 	}
+	assert(0 && "Unknown modification location.");
+	abort();
 }
 
 /**
@@ -199,9 +201,19 @@ static int compareModifs(const void *left, const void *right)
 	{
 		return 1;
 	}
+	/* int is probably smaller than size_t; */
+	/* subtraction may lead to bogus results */
+	else if (lLoc.col < rLoc.col)
+	{
+		return -1;
+	}
+	else if (lLoc.col > rLoc.col)
+	{
+		return 1;
+	}
 	else
 	{
-		return lLoc.col - rLoc.col;
+		return 0;
 	}
 }
 
