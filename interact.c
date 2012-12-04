@@ -162,8 +162,10 @@ static inline module_loc_t modifCharacteristicLoc(const modif_t *mod)
 		case MODIF_REMOVE:
 			return mod->m.remove.fromWhere;
 		default:
-			assert(0 && "Unknown modification location.");
+			break;
 	}
+	assert(0 && "Unknown modification location.");
+	abort();
 }
 
 /**
