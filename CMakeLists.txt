@@ -23,8 +23,9 @@ add_executable(voidcaster
 	voidcaster.c
 )
 
-# link it against libclang
+# compile and link it against libclang
 find_package(LibClang)
+include_directories(${LIBCLANG_INCLUDE_DIRS})
 target_link_libraries(voidcaster ${LIBCLANG_LIBRARIES})
 
 # define the GCC system include directory
