@@ -1,15 +1,11 @@
 # build spam
 *.o
-version.h
 
 # Vim spam
 *.swp
 
-# build config
-config.mk
-
 # backup files
 *~
 
-# binaries
-voidcaster
+# build directory
+build
