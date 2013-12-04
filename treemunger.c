@@ -157,7 +157,7 @@ static enum CXChildVisitResult visitation(CXCursor cur, CXCursor parent, CXClien
 	/* kind of cursor */
 	enum CXCursorKind curKind = clang_getCursorKind(cur);
 
-	if (curKind == CXCursor_CompoundStmt)
+	if (curKind == CXCursor_CompoundStmt || curKind == CXCursor_CaseStmt)
 	{
 		/* compound statement above. means the function call tosses away its value. */
 		kiddstate.compoundStmtAbove = true;

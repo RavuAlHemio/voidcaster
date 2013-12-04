@@ -32,6 +32,16 @@ void this_one_is_correct(void)
 	}
 
 	charz = printf("characters?\n");
+
+	switch (charz)
+	{
+	case 1:
+		printf("one\n");
+		break;
+	case 2:
+		(void)printf("two\n");
+		break;
+	}
 }
 
 void this_one_is_wrong(void)
