@@ -41,5 +41,5 @@ was violated.
 Who?
 ----
 
-I am a student and former junior teaching assistant at TU Wuen (also known as
+I am a student and former junior teaching assistant at TU Wien (also known as
 *Technische Universität Wien* and to locals as *die TU*).
